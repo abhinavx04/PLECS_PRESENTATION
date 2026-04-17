@@ -6,7 +6,7 @@ const stages = [
     desc: 'Reduces current ripple',
     color: 'from-red-500/20 to-red-500/5',
     border: 'border-red-500/40',
-    glow: 'shadow-red-500/20',
+    glow: 'shadow-[0_0_20px_rgba(239,68,68,0.18)]',
     text: 'text-red-400',
   },
   {
@@ -14,7 +14,7 @@ const stages = [
     desc: 'Smooths voltage',
     color: 'from-purple-500/20 to-purple-500/5',
     border: 'border-purple-500/40',
-    glow: 'shadow-purple-500/20',
+    glow: 'shadow-[0_0_26px_rgba(168,85,247,0.28)]',
     text: 'text-purple-400',
   },
   {
@@ -22,7 +22,7 @@ const stages = [
     desc: 'Final filtering stage',
     color: 'from-blue-500/20 to-blue-500/5',
     border: 'border-blue-500/40',
-    glow: 'shadow-blue-500/20',
+    glow: 'shadow-[0_0_34px_rgba(59,130,246,0.42)]',
     text: 'text-blue-400',
   },
 ]
@@ -60,10 +60,26 @@ export default function LCLFilterDiagram() {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="flex items-center justify-center gap-2 sm:gap-3"
+      className="relative flex items-center justify-center gap-2 sm:gap-3"
     >
+      <div className="pointer-events-none absolute left-[11%] right-[11%] top-1/2 hidden h-px -translate-y-1/2 bg-gradient-to-r from-red-500/45 via-purple-500/40 to-blue-400/50 sm:block" />
+      {[0, 0.9, 1.8].map((delay, i) => (
+        <motion.div
+          key={`flow-dot-${i}`}
+          className="pointer-events-none absolute top-1/2 hidden h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-blue-300/85 shadow-[0_0_14px_rgba(96,165,250,0.75)] sm:block"
+          initial={{ left: '11%', opacity: 0 }}
+          animate={{ left: ['11%', '88%'], opacity: [0, 0.9, 0] }}
+          transition={{
+            duration: 2.8,
+            delay,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+        />
+      ))}
+
       {stages.map((stage, i) => (
-        <div key={stage.label} className="flex items-center gap-2 sm:gap-3">
+        <div key={stage.label} className="relative z-10 flex items-center gap-2 sm:gap-3">
           <motion.div
             variants={itemVariants}
             className={`

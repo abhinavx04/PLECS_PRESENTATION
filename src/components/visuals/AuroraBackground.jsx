@@ -2,22 +2,22 @@ import SoftAurora from '@/components/SoftAurora'
 
 export default function AuroraBackground() {
   return (
-    <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden opacity-45">
+    <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden opacity-90">
       <SoftAurora
-        speed={1.45}
+        speed={1.5}
         scale={1.5}
-        brightness={0.72}
-        color1="#0321e5"
-        color2="#0b2cea"
-        noiseFrequency={2.8}
-        noiseAmplitude={0.85}
-        bandHeight={0.5}
-        bandSpread={0.92}
+        brightness={1.22}
+        color1="#1d4ed8"
+        color2="#38bdf8"
+        noiseFrequency={2.5}
+        noiseAmplitude={1}
+        bandHeight={0.45}
+        bandSpread={0.88}
         octaveDecay={0.2}
-        layerOffset={0}
-        colorSpeed={0.9}
+        layerOffset={0.15}
+        colorSpeed={1.1}
         enableMouseInteraction
-        mouseInfluence={0.18}
+        mouseInfluence={0.2}
       />
     </div>
   )

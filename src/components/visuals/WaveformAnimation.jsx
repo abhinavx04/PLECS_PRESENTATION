@@ -1,32 +1,76 @@
 import { useRef, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 
-const CANVAS_W = 520
-const CANVAS_H = 180
-const MID_Y = CANVAS_H / 2
-const AMP = 58
+const W = 680
+const H = 260
+const MID = H / 2
+const AMP = 88
 
-function easeInOut(t) {
-  return 0.5 * (1 - Math.cos(Math.PI * t))
+const F_FUND = 0.009
+const F_CARRIER_BASE = 0.12
+const W_FUND = 0.6
+const W_CARRIER = 3.8
+const DRIFT = 8
+
+function triangle(phase) {
+  const p = ((phase % 1) + 1) % 1
+  return 4 * Math.abs(p - 0.5) - 1
 }
 
-function drawPWM(ctx, xStart, xEnd, time, color) {
-  const freq = 0.105
-  const pulseW = 6.5
+function hermite(t) {
+  return t * t * (3 - 2 * t)
+}
+
+function getFilterAmount(x, regionPWM, regionTrans) {
+  if (x < regionPWM) return 0
+  if (x >= regionTrans) return 1
+  return (x - regionPWM) / (regionTrans - regionPWM)
+}
+
+function sample(x, t, filterRaw) {
+  const xDrifted = x - t * DRIFT
+  const theta = 2 * Math.PI * (xDrifted * F_FUND + t * W_FUND)
+  const sine = Math.sin(theta)
+
+  if (filterRaw >= 1) return sine
+
+  const s = hermite(filterRaw)
+
+  const carrierFreq = F_CARRIER_BASE * (1 - s * 0.55)
+  const carrier = triangle(xDrifted * carrierFreq + t * W_CARRIER)
+  const pwm = sine >= carrier ? 1 : -1
+
+  const rippleDecay = (1 - s) * (1 - s) * 0.06
+  const ripple = rippleDecay * Math.sin(2 * Math.PI * (xDrifted * F_CARRIER_BASE * 0.4 + t * W_CARRIER * 0.35))
+
+  return pwm * (1 - s) + sine * s + ripple
+}
+
+function colorAt(s) {
+  const r = Math.round(239 + (56 - 239) * s)
+  const g = Math.round(68 + (132 - 68) * s)
+  const b = Math.round(68 + (246 - 68) * s)
+  return [r, g, b]
+}
+
+function drawRegion(ctx, xFrom, xTo, t, regionPWM, regionTrans) {
+  const fStart = hermite(getFilterAmount(xFrom, regionPWM, regionTrans))
+  const fEnd = hermite(getFilterAmount(xTo, regionPWM, regionTrans))
+  const fAvg = (fStart + fEnd) * 0.5
+
+  const [r, g, b] = colorAt(fAvg)
+
+  ctx.strokeStyle = `rgb(${r},${g},${b})`
+  ctx.shadowColor = `rgba(${r},${g},${b},${0.4 + fAvg * 0.4})`
+  ctx.shadowBlur = 3 + fAvg * 10
+  ctx.lineWidth = 1.6 + fAvg * 0.8
+
   ctx.beginPath()
-  ctx.strokeStyle = color
-  ctx.lineWidth = 2
-  ctx.shadowColor = color
-  ctx.shadowBlur = 6
-
   let first = true
-  for (let x = xStart; x <= xEnd; x += 1) {
-    const sineEnv = Math.sin((x - xStart) * 0.022 + time * 1.7)
-    const duty = 0.5 + 0.4 * sineEnv
-    const phase = ((x - xStart + time * 56) * freq) % (pulseW * 2)
-    const high = phase < pulseW * 2 * duty
-    const y = MID_Y + (high ? -AMP * 0.8 : AMP * 0.8)
-
+  for (let x = xFrom; x <= xTo; x++) {
+    const fRaw = getFilterAmount(x, regionPWM, regionTrans)
+    const val = sample(x, t, fRaw)
+    const y = MID - val * AMP * 0.82
     if (first) { ctx.moveTo(x, y); first = false }
     else ctx.lineTo(x, y)
   }
@@ -34,57 +78,58 @@ function drawPWM(ctx, xStart, xEnd, time, color) {
   ctx.shadowBlur = 0
 }
 
-function drawSineWave(ctx, xStart, xEnd, time, color) {
-  ctx.beginPath()
-  ctx.strokeStyle = color
-  ctx.lineWidth = 2.5
-  ctx.shadowColor = color
-  ctx.shadowBlur = 10
+function drawWaveform(ctx, t) {
+  const regionPWM = W * 0.28
+  const regionTrans = W * 0.74
 
-  let first = true
-  for (let x = xStart; x <= xEnd; x += 1) {
-    const y = MID_Y + AMP * Math.sin((x - xStart) * 0.036 + time * 1.9)
-    if (first) { ctx.moveTo(x, y); first = false }
-    else ctx.lineTo(x, y)
+  ctx.save()
+
+  drawRegion(ctx, 0, Math.floor(regionPWM), t, regionPWM, regionTrans)
+
+  const SEGMENTS = 10
+  const transW = regionTrans - regionPWM
+  for (let i = 0; i < SEGMENTS; i++) {
+    const x0 = Math.floor(regionPWM + (transW * i) / SEGMENTS)
+    const x1 = Math.floor(regionPWM + (transW * (i + 1)) / SEGMENTS)
+    drawRegion(ctx, x0, x1, t, regionPWM, regionTrans)
   }
-  ctx.stroke()
-  ctx.shadowBlur = 0
+
+  drawRegion(ctx, Math.floor(regionTrans), W, t, regionPWM, regionTrans)
+
+  ctx.restore()
 }
 
-function drawTransition(ctx, xStart, xEnd, time) {
+function drawCenterline(ctx) {
+  ctx.save()
+  ctx.setLineDash([3, 8])
+  ctx.strokeStyle = 'rgba(148,163,184,0.1)'
+  ctx.lineWidth = 1
   ctx.beginPath()
-  ctx.lineWidth = 2
-  ctx.shadowBlur = 8
-
-  let first = true
-  for (let x = xStart; x <= xEnd; x += 1) {
-    const t = (x - xStart) / (xEnd - xStart)
-    const blend = easeInOut(t)
-
-    const sineEnv = Math.sin((x - xStart) * 0.022 + time * 1.7)
-    const duty = 0.5 + 0.4 * sineEnv
-    const freq = 0.105
-    const pulseW = 6.5
-    const phase = ((x - xStart + time * 56) * freq) % (pulseW * 2)
-    const high = phase < pulseW * 2 * duty
-    const pwmY = MID_Y + (high ? -AMP * 0.8 : AMP * 0.8)
-
-    const sineY = MID_Y + AMP * Math.sin((x - xStart) * 0.036 + time * 1.9)
-
-    const y = pwmY * (1 - blend) + sineY * blend
-
-    const r = Math.round(239 * (1 - blend) + 35 * blend)
-    const g = Math.round(68 * (1 - blend) + 125 * blend)
-    const b = Math.round(68 * (1 - blend) + 246 * blend)
-    const color = `rgb(${r},${g},${b})`
-    ctx.strokeStyle = color
-    ctx.shadowColor = color
-
-    if (first) { ctx.moveTo(x, y); first = false }
-    else { ctx.lineTo(x, y) }
-  }
+  ctx.moveTo(0, MID)
+  ctx.lineTo(W, MID)
   ctx.stroke()
-  ctx.shadowBlur = 0
+  ctx.restore()
+}
+
+function drawLabels(ctx) {
+  ctx.font = '600 10px Inter, sans-serif'
+  ctx.fillStyle = 'rgba(239,68,68,0.78)'
+  ctx.fillText('PWM', 10, 17)
+
+  ctx.fillStyle = 'rgba(148,163,184,0.38)'
+  ctx.fillText('FILTER', W * 0.47, 17)
+
+  ctx.fillStyle = 'rgba(59,130,246,0.82)'
+  ctx.fillText('SINE', W - 42, 17)
+}
+
+function drawBackground(ctx) {
+  const grad = ctx.createLinearGradient(0, 0, W, 0)
+  grad.addColorStop(0, 'rgba(239,68,68,0.05)')
+  grad.addColorStop(0.42, 'rgba(100,100,180,0.03)')
+  grad.addColorStop(1, 'rgba(59,130,246,0.05)')
+  ctx.fillStyle = grad
+  ctx.fillRect(0, 0, W, H)
 }
 
 export default function WaveformAnimation() {
@@ -95,32 +140,13 @@ export default function WaveformAnimation() {
     const canvas = canvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext('2d')
-    const time = timestamp * 0.001
+    const t = timestamp * 0.001
 
-    ctx.clearRect(0, 0, CANVAS_W, CANVAS_H)
-
-    const pwmEnd = CANVAS_W * 0.28
-    const transStart = pwmEnd
-    const transEnd = CANVAS_W * 0.72
-    const sineStart = transEnd
-
-    const gradient = ctx.createLinearGradient(0, 0, CANVAS_W, 0)
-    gradient.addColorStop(0, 'rgba(239,68,68,0.12)')
-    gradient.addColorStop(0.5, 'rgba(90,95,180,0.12)')
-    gradient.addColorStop(1, 'rgba(59,130,246,0.12)')
-    ctx.fillStyle = gradient
-    ctx.fillRect(0, 0, CANVAS_W, CANVAS_H)
-
-    drawPWM(ctx, 0, pwmEnd, time, '#EF4444')
-    drawTransition(ctx, transStart, transEnd, time)
-    drawSineWave(ctx, sineStart, CANVAS_W, time, '#3B82F6')
-
-    ctx.fillStyle = 'rgba(239,68,68,0.88)'
-    ctx.font = '500 11px Inter, sans-serif'
-    ctx.fillText('PWM Input', 8, 18)
-
-    ctx.fillStyle = 'rgba(59,130,246,0.9)'
-    ctx.fillText('Clean Sine Output', CANVAS_W - 120, 18)
+    ctx.clearRect(0, 0, W, H)
+    drawBackground(ctx)
+    drawCenterline(ctx)
+    drawWaveform(ctx, t)
+    drawLabels(ctx)
 
     animRef.current = requestAnimationFrame(draw)
   }, [])
@@ -135,14 +161,17 @@ export default function WaveformAnimation() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.9, delay: 0.3, ease: 'easeInOut' }}
-      className="flex items-center justify-center"
+      className="relative flex items-center justify-center"
     >
       <canvas
         ref={canvasRef}
-        width={CANVAS_W}
-        height={CANVAS_H}
-        className="w-full max-w-[520px]"
+        width={W}
+        height={H}
+        className="w-full max-w-[680px]"
       />
+      <div className="pointer-events-none absolute right-2 top-7 rounded-full border border-emerald-300/35 bg-emerald-500/12 px-3 py-1 text-[10px] font-semibold tracking-[0.08em] text-emerald-300 shadow-[0_0_18px_rgba(34,197,94,0.25)] backdrop-blur-sm sm:right-3 sm:text-[11px]">
+        THD ↓ 0.33%
+      </div>
     </motion.div>
   )
 }
