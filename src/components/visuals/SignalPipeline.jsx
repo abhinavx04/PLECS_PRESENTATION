@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback } from 'react'
+import { useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
 
 const DPR = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 2) : 1
@@ -153,7 +153,6 @@ function drawFilterBlock(ctx, nxStart, nxEnd, label, desc, hue, glowAlpha, t) {
   const yOut = MID - valOut * AMP
 
   const [rIn, gIn, bIn] = colorAt(fIn)
-  const [rOut, gOut, bOut] = colorAt(fOut)
 
   ctx.setLineDash([4 * DPR, 5 * DPR])
 
@@ -234,30 +233,29 @@ export default function SignalPipeline() {
   const canvasRef = useRef(null)
   const animRef = useRef(null)
 
-  const draw = useCallback((timestamp) => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')
-    const t = timestamp * 0.001
-
-    ctx.clearRect(0, 0, W, H)
-    drawCenterline(ctx)
-    drawWaveform(ctx, t)
-
-    drawFilterBlock(ctx, L1_START, L1_END, 'L\u2081', 'Current ripple', 0, 0.15, t)
-    drawFilterBlock(ctx, C_START, C_END, 'C', 'Voltage smooth', 270, 0.22, t)
-    drawFilterBlock(ctx, L2_START, L2_END, 'L\u2082', 'Final filter', 217, 0.35, t)
-
-    drawFlowDots(ctx, t)
-    drawLabels(ctx)
-
-    animRef.current = requestAnimationFrame(draw)
-  }, [])
-
   useEffect(() => {
-    animRef.current = requestAnimationFrame(draw)
+    function tick(timestamp) {
+      const canvas = canvasRef.current
+      if (!canvas) return
+      const ctx = canvas.getContext('2d')
+      const t = timestamp * 0.001
+
+      ctx.clearRect(0, 0, W, H)
+      drawCenterline(ctx)
+      drawWaveform(ctx, t)
+
+      drawFilterBlock(ctx, L1_START, L1_END, 'L\u2081', 'Current ripple', 0, 0.15, t)
+      drawFilterBlock(ctx, C_START, C_END, 'C', 'Voltage smooth', 270, 0.22, t)
+      drawFilterBlock(ctx, L2_START, L2_END, 'L\u2082', 'Final filter', 217, 0.35, t)
+
+      drawFlowDots(ctx, t)
+      drawLabels(ctx)
+
+      animRef.current = requestAnimationFrame(tick)
+    }
+    animRef.current = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(animRef.current)
-  }, [draw])
+  }, [])
 
   return (
     <motion.div

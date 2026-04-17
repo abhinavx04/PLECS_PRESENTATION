@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback } from 'react'
+import { useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
 
 const W = 680
@@ -136,25 +136,24 @@ export default function WaveformAnimation() {
   const canvasRef = useRef(null)
   const animRef = useRef(null)
 
-  const draw = useCallback((timestamp) => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')
-    const t = timestamp * 0.001
-
-    ctx.clearRect(0, 0, W, H)
-    drawBackground(ctx)
-    drawCenterline(ctx)
-    drawWaveform(ctx, t)
-    drawLabels(ctx)
-
-    animRef.current = requestAnimationFrame(draw)
-  }, [])
-
   useEffect(() => {
-    animRef.current = requestAnimationFrame(draw)
+    function tick(timestamp) {
+      const canvas = canvasRef.current
+      if (!canvas) return
+      const ctx = canvas.getContext('2d')
+      const t = timestamp * 0.001
+
+      ctx.clearRect(0, 0, W, H)
+      drawBackground(ctx)
+      drawCenterline(ctx)
+      drawWaveform(ctx, t)
+      drawLabels(ctx)
+
+      animRef.current = requestAnimationFrame(tick)
+    }
+    animRef.current = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(animRef.current)
-  }, [draw])
+  }, [])
 
   return (
     <motion.div
