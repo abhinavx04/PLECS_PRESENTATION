@@ -17,67 +17,90 @@ function Frac({ top, bottom }) {
   )
 }
 
-/* ── equation line data ── */
-const EQUATION_LINES = [
+/* ── equation steps data (strict order) ── */
+const EQUATION_STEPS = [
   {
     id: 1,
-    label: 'Inductor voltage-current relationship',
+    label: 'Fundamental inductor equation',
     equation: (
       <span className="inline-flex items-center flex-wrap gap-x-2">
-        {I('V')}{S('L')} <span>=</span> {I('L')} <span>·</span>
+        {I('V')}{S('L')} <span>=</span> {I('L')}
         <Frac top={<>{I('di')}</>} bottom={<>{I('dt')}</>} />
       </span>
     ),
-    detail: 'Voltage across an inductor is proportional to rate of change of current.',
+    detail: 'Voltage across an inductor equals inductance times rate of current change.',
   },
   {
     id: 2,
-    label: 'Ripple in the first inductor',
+    label: 'Applied to inverter-side inductor',
+    equation: (
+      <span className="inline-flex items-center flex-wrap gap-x-2">
+        {I('V')}{S(<>L{S('1')}</>)} <span>=</span> {I('L')}{S('1')}
+        <Frac top={<>{I('di')}{S(<>L{S('1')}</>)}</>} bottom={<>{I('dt')}</>} />
+      </span>
+    ),
+    detail: 'Applying the fundamental equation to the inverter-side inductor L₁.',
+  },
+  {
+    id: 3,
+    label: 'Current ripple in L₁',
     equation: (
       <span className="inline-flex items-center flex-wrap gap-x-2">
         Δ{I('i')}{S(<>L{S('1')}</>)} <span>=</span>
         <Frac top={<>{I('V')}{S('dc')}</>} bottom={<>4 · {I('f')}{S('sw')} · {I('L')}{S('1')}</>} />
       </span>
     ),
-    detail: 'DC bus voltage drives triangular current ripple through inverter-side inductor.',
+    detail: 'Peak-to-peak current ripple depends on DC voltage, switching frequency, and inductance.',
   },
   {
-    id: 3,
-    label: 'LCL filter attenuation',
+    id: 4,
+    label: 'Ripple attenuation through LCL',
     equation: (
       <span className="inline-flex items-center flex-wrap gap-x-2">
         Δ{I('i')}{S(<>L{S('2')}</>)} <span>≈</span>
         <Frac top={<>Δ{I('i')}{S(<>L{S('1')}</>)}</>} bottom={<>{I('ω')}{P('2')} · {I('L')}{S('2')} · {I('C')}</>} />
       </span>
     ),
-    detail: 'LCL filter provides steep third-order roll-off for ripple attenuation.',
-  },
-  {
-    id: 4,
-    label: 'Output voltage ripple',
-    equation: (
-      <span className="inline-flex items-center flex-wrap gap-x-2">
-        Δ{I('V')}{S('out')} <span>≈</span>
-        <Frac top={<>{I('V')}{S('dc')} · {I('R')}</>} bottom={<>16{I('π')}{P('2')} · {I('f')}{S('sw')}{P('3')} · {I('L')}{S('1')} · {I('L')}{S('2')} · {I('C')}</>} />
-      </span>
-    ),
-    detail: 'Output distortion depends inversely on the cube of switching frequency.',
+    detail: 'The LC section attenuates ripple current reaching the grid-side inductor.',
   },
   {
     id: 5,
+    label: 'Output voltage ripple',
+    equation: (
+      <span className="inline-flex items-center flex-wrap gap-x-2">
+        Δ{I('V')}{S('out')} <span>=</span> Δ{I('i')}{S(<>L{S('2')}</>)} <span>×</span> {I('R')}
+      </span>
+    ),
+    detail: 'Output voltage ripple is the attenuated current ripple times load resistance.',
+  },
+  {
+    id: 6,
+    label: 'Combined proportionality',
+    equation: (
+      <span className="inline-flex items-center flex-wrap gap-x-2">
+        Δ{I('V')}{S('out')} <span>∝</span>
+        <Frac top={<>{I('V')}{S('dc')}</>} bottom={<>{I('f')}{S('sw')}{P('3')} · {I('L')}{S('1')} · {I('L')}{S('2')} · {I('C')}</>} />
+      </span>
+    ),
+    detail: 'Combining all steps reveals inverse cubic dependence on switching frequency.',
+  },
+  {
+    id: 7,
     label: 'Design objective',
     isHighlight: true,
     equation: (
       <span className="inline-flex items-center flex-wrap gap-x-2">
         <span>Minimize THD</span> <span>⇒</span> <span>Maximize</span>
-        {I('f')}{S('sw')}{P('3')} <span>·</span> {I('L')}{S('1')} <span>·</span> {I('L')}{S('2')} <span>·</span> {I('C')}
+        <span className="text-amber-200">
+          {I('f')}{S('sw')}{P('3')} · {I('L')}{S('1')} · {I('L')}{S('2')} · {I('C')}
+        </span>
       </span>
     ),
-    detail: 'Maximize the product of switching frequency cubed and LCL component values.',
+    detail: 'To minimize THD, maximize the product of f³ₛw and filter component values.',
   },
 ]
 
-const TOTAL_LINES = EQUATION_LINES.length
+const TOTAL_STEPS = EQUATION_STEPS.length
 
 /* ── Vertical connecting line ── */
 function ConnectingLine({ isVisible, isHighlight }) {
@@ -94,14 +117,14 @@ function ConnectingLine({ isVisible, isHighlight }) {
   )
 }
 
-/* ── Single equation line ── */
-function EquationLine({ line, isVisible, isCurrentLine, lineIndex, showConnector }) {
-  const isHighlight = line.isHighlight
+/* ── Single equation step ── */
+function EquationStep({ step, isVisible, isCurrentStep, stepIndex, showConnector }) {
+  const isHighlight = step.isHighlight
   
   return (
     <motion.div
-      initial={{ opacity: 0.2 }}
-      animate={{ opacity: isVisible ? 1 : 0.25 }}
+      initial={{ opacity: 0.15 }}
+      animate={{ opacity: isVisible ? 1 : 0.2 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
       className="relative"
     >
@@ -109,17 +132,17 @@ function EquationLine({ line, isVisible, isCurrentLine, lineIndex, showConnector
       <div className="absolute left-0 top-0 flex flex-col items-center">
         <motion.div
           animate={{
-            scale: isCurrentLine ? [1, 1.2, 1] : 1,
-            boxShadow: isCurrentLine 
+            scale: isCurrentStep ? [1, 1.15, 1] : 1,
+            boxShadow: isCurrentStep 
               ? isHighlight
-                ? '0 0 12px rgba(251,191,36,0.5)'
+                ? '0 0 14px rgba(251,191,36,0.6)'
                 : '0 0 12px rgba(96,165,250,0.5)'
               : 'none'
           }}
-          transition={{ duration: 2, repeat: isCurrentLine ? Infinity : 0, ease: 'easeInOut' }}
+          transition={{ duration: 2, repeat: isCurrentStep ? Infinity : 0, ease: 'easeInOut' }}
           className={cn(
             'h-6 w-6 rounded-full border-2 flex items-center justify-center text-[10px] font-bold transition-all duration-300',
-            isCurrentLine
+            isCurrentStep
               ? isHighlight
                 ? 'border-amber-400 bg-amber-500/20 text-amber-300'
                 : 'border-blue-400 bg-blue-500/20 text-blue-300'
@@ -128,10 +151,10 @@ function EquationLine({ line, isVisible, isCurrentLine, lineIndex, showConnector
                 : 'border-slate-700 bg-slate-900 text-slate-600'
           )}
         >
-          {line.id}
+          {step.id}
         </motion.div>
         
-        {/* Connecting line to next */}
+        {/* Connecting line to next step */}
         {showConnector && <ConnectingLine isVisible={isVisible} isHighlight={isHighlight} />}
       </div>
 
@@ -139,60 +162,60 @@ function EquationLine({ line, isVisible, isCurrentLine, lineIndex, showConnector
       <div className="pl-10">
         {/* Label */}
         <motion.p
-          animate={{ opacity: isVisible ? 1 : 0.4 }}
+          animate={{ opacity: isVisible ? 1 : 0.35 }}
           className={cn(
             'mb-2 text-xs font-medium uppercase tracking-wider transition-colors duration-300',
-            isCurrentLine
+            isCurrentStep
               ? isHighlight
-                ? 'text-amber-300/80'
-                : 'text-blue-300/80'
+                ? 'text-amber-300/90'
+                : 'text-blue-300/90'
               : 'text-slate-500'
           )}
         >
-          {line.label}
+          {step.label}
         </motion.p>
 
         {/* Equation */}
         <div
           className={cn(
             'font-mono text-xl tracking-wide transition-all duration-300 sm:text-2xl lg:text-3xl min-h-[2.5rem]',
-            isCurrentLine
+            isCurrentStep
               ? isHighlight
                 ? 'text-amber-100'
                 : 'text-slate-100'
               : isVisible
-                ? 'text-slate-400/60'
-                : 'text-slate-600/40'
+                ? 'text-slate-400/70'
+                : 'text-slate-600/30'
           )}
         >
           <AnimatePresence mode="wait">
             {isVisible && (
               <motion.div
-                initial={{ opacity: 0, x: -20 }}
+                initial={{ opacity: 0, x: -15 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ duration: 0.35, ease: 'easeOut' }}
+                exit={{ opacity: 0, x: 15 }}
+                transition={{ duration: 0.3, ease: 'easeOut' }}
               >
-                {line.equation}
+                {step.equation}
               </motion.div>
             )}
           </AnimatePresence>
         </div>
 
-        {/* Detail text - appears when line is visible */}
+        {/* Detail text */}
         <AnimatePresence>
           {isVisible && (
             <motion.p
               initial={{ opacity: 0, y: -5 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -5 }}
-              transition={{ duration: 0.3, delay: 0.15 }}
+              transition={{ duration: 0.3, delay: 0.1 }}
               className={cn(
-                'mt-2 text-sm',
+                'mt-2 text-sm max-w-xl',
                 isHighlight ? 'text-amber-200/60' : 'text-slate-400/70'
               )}
             >
-              {line.detail}
+              {step.detail}
             </motion.p>
           )}
         </AnimatePresence>
@@ -211,7 +234,7 @@ function EquationLine({ line, isVisible, isCurrentLine, lineIndex, showConnector
               className="h-2 w-2 rounded-full bg-amber-400"
             />
             <span className="text-xs font-semibold uppercase tracking-wider text-amber-300/70">
-              Core design result
+              Core design insight
             </span>
           </motion.div>
         )}
@@ -223,22 +246,22 @@ function EquationLine({ line, isVisible, isCurrentLine, lineIndex, showConnector
 /* ── Progress indicator ── */
 function ProgressIndicator({ current, total }) {
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-2">
       {Array.from({ length: total }, (_, i) => (
         <motion.div
           key={i}
           animate={{
-            scale: i === current ? 1.2 : 1,
+            scale: i === current - 1 ? 1.3 : 1,
             backgroundColor: i < current 
-              ? 'rgb(59, 130, 246)' 
-              : i === current 
-                ? 'rgb(96, 165, 250)' 
-                : 'rgb(51, 65, 85)'
+              ? i === total - 1 && i === current - 1
+                ? 'rgb(251, 191, 36)'
+                : 'rgb(59, 130, 246)' 
+              : 'rgb(51, 65, 85)'
           }}
-          className="h-2 w-2 rounded-full"
+          className="h-1.5 w-1.5 rounded-full"
         />
       ))}
-      <span className="ml-2 text-xs font-medium text-slate-500">
+      <span className="ml-3 text-xs font-medium text-slate-500">
         {current} / {total}
       </span>
     </div>
@@ -269,10 +292,10 @@ function KeyboardHint() {
 /* ── main section ── */
 export default function DerivationSection() {
   const containerRef = useRef(null)
-  const [currentLine, setCurrentLine] = useState(0) // 0 = none visible, 1-5 = lines visible
+  const [currentStep, setCurrentStep] = useState(0) // 0 = none visible, 1-7 = steps visible
   const [isInView, setIsInView] = useState(false)
 
-  // Handle keyboard navigation - one press = one full line
+  // Handle keyboard navigation - one press = one full equation
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (!isInView) return
@@ -280,11 +303,11 @@ export default function DerivationSection() {
       if (e.key === 'ArrowRight') {
         e.preventDefault()
         e.stopPropagation()
-        setCurrentLine((prev) => Math.min(prev + 1, TOTAL_LINES))
+        setCurrentStep((prev) => Math.min(prev + 1, TOTAL_STEPS))
       } else if (e.key === 'ArrowLeft') {
         e.preventDefault()
         e.stopPropagation()
-        setCurrentLine((prev) => Math.max(prev - 1, 0))
+        setCurrentStep((prev) => Math.max(prev - 1, 0))
       }
     }
 
@@ -320,7 +343,7 @@ export default function DerivationSection() {
 
       <div className="relative z-10 mx-auto flex min-h-screen max-w-5xl flex-col px-6 py-16 md:px-10">
         {/* Header */}
-        <div className="mb-12">
+        <div className="mb-10">
           <motion.p
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -343,23 +366,23 @@ export default function DerivationSection() {
 
         {/* Equations - vertical flow */}
         <div className="flex-1">
-          <div className="flex flex-col gap-10">
-            {EQUATION_LINES.map((line, lineIndex) => (
-              <EquationLine
-                key={line.id}
-                line={line}
-                lineIndex={lineIndex}
-                isVisible={lineIndex < currentLine}
-                isCurrentLine={lineIndex === currentLine - 1}
-                showConnector={lineIndex < EQUATION_LINES.length - 1}
+          <div className="flex flex-col gap-8">
+            {EQUATION_STEPS.map((step, stepIndex) => (
+              <EquationStep
+                key={step.id}
+                step={step}
+                stepIndex={stepIndex}
+                isVisible={stepIndex < currentStep}
+                isCurrentStep={stepIndex === currentStep - 1}
+                showConnector={stepIndex < EQUATION_STEPS.length - 1}
               />
             ))}
           </div>
         </div>
 
         {/* Footer controls */}
-        <div className="mt-12 flex items-center justify-between border-t border-slate-800/50 pt-6">
-          <ProgressIndicator current={currentLine} total={TOTAL_LINES} />
+        <div className="mt-10 flex items-center justify-between border-t border-slate-800/50 pt-6">
+          <ProgressIndicator current={currentStep} total={TOTAL_STEPS} />
           <KeyboardHint />
         </div>
       </div>

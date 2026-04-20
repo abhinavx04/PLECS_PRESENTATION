@@ -2,6 +2,7 @@ import { useEffect, useRef, useCallback } from 'react'
 import HeroSection from './sections/Hero/HeroSection'
 import DesignObjectivesSection from './sections/DesignObjectives/DesignObjectivesSection'
 import CircuitSection from './sections/Circuit/CircuitSection'
+import SpecificationsSection from './sections/Specifications/SpecificationsSection'
 import DerivationSection from './sections/Derivation/DerivationSection'
 
 function App() {
@@ -55,6 +56,7 @@ function App() {
       <HeroSection />
       <DesignObjectivesSection />
       <CircuitSection />
+      <SpecificationsSection />
       <DerivationSection />
     </div>
   )
