@@ -13,8 +13,12 @@ export default function ProblemStatement() {
   return (
     <section
       ref={ref}
-      className="relative flex min-h-screen items-center overflow-hidden"
+      className="relative flex h-screen min-h-screen snap-start items-center overflow-hidden bg-gradient-to-b from-[#111827] via-background to-background"
+      data-section="problem"
     >
+      {/* Radial glow from top */}
+      <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(59,130,246,0.12),transparent)]" />
+      
       {/* Ambient glow */}
       <motion.div
         animate={{
@@ -45,7 +49,7 @@ export default function ProblemStatement() {
       <div className="relative z-10 mx-auto w-full max-w-7xl px-6 md:px-10">
         <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
           {/* Left: Text content */}
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-5">
             <motion.h2
               variants={fadeUp}
               initial="hidden"
@@ -58,16 +62,37 @@ export default function ProblemStatement() {
               Is Equal
             </motion.h2>
 
-            <motion.p
-              variants={fadeUp}
-              initial="hidden"
-              animate={isInView ? 'visible' : 'hidden'}
-              transition={{ duration: 0.8, ease: 'easeOut', delay: 0.2 }}
-              className="max-w-lg text-lg leading-relaxed text-slate-300/90 sm:text-xl"
-            >
-              In ultra-precision systems, even microscopic voltage distortions
-              can cause critical errors.
-            </motion.p>
+            <div className="flex flex-col gap-4 pt-2">
+              <motion.p
+                variants={fadeUp}
+                initial="hidden"
+                animate={isInView ? 'visible' : 'hidden'}
+                transition={{ duration: 0.8, ease: 'easeOut', delay: 0.15 }}
+                className="text-lg text-slate-300/90 sm:text-xl"
+              >
+                In precision systems, tiny distortions matter.
+              </motion.p>
+
+              <motion.p
+                variants={fadeUp}
+                initial="hidden"
+                animate={isInView ? 'visible' : 'hidden'}
+                transition={{ duration: 0.8, ease: 'easeOut', delay: 0.25 }}
+                className="text-lg text-slate-300/90 sm:text-xl"
+              >
+                Harmonic components introduce instability.
+              </motion.p>
+
+              <motion.p
+                variants={fadeUp}
+                initial="hidden"
+                animate={isInView ? 'visible' : 'hidden'}
+                transition={{ duration: 0.8, ease: 'easeOut', delay: 0.35 }}
+                className="text-lg text-slate-200 brightness-110 sm:text-xl"
+              >
+                Signal quality directly affects system behavior.
+              </motion.p>
+            </div>
           </div>
 
           {/* Right: Abstract visual */}

@@ -129,8 +129,12 @@ export default function RippleImpact() {
   return (
     <section
       ref={ref}
-      className="relative flex min-h-screen items-center overflow-hidden"
+      className="relative flex h-screen min-h-screen snap-start items-center overflow-hidden bg-gradient-to-b from-background via-background to-[#111827]"
+      data-section="ripple"
     >
+      {/* Radial glow from top */}
+      <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(59,130,246,0.08),transparent)]" />
+      
       {/* Background gradients */}
       <div className="pointer-events-none absolute left-[5%] top-1/3 h-[400px] w-[400px] rounded-full bg-red-500/5 blur-[100px]" />
       <div className="pointer-events-none absolute right-[5%] top-1/3 h-[400px] w-[400px] rounded-full bg-blue-500/8 blur-[100px]" />
@@ -157,7 +161,7 @@ export default function RippleImpact() {
                 className="flex flex-col items-center gap-1"
               >
                 <span className="font-heading text-xl font-bold text-red-400">High THD</span>
-                <span className="text-sm text-slate-400">Distorted Signal</span>
+                <span className="text-sm text-slate-400">Unstable frequency components</span>
               </motion.div>
             </motion.div>
 
@@ -197,20 +201,49 @@ export default function RippleImpact() {
                 className="flex flex-col items-center gap-1"
               >
                 <span className="font-heading text-xl font-bold text-blue-400">Low THD</span>
-                <span className="text-sm text-slate-400">Clean Signal</span>
+                <span className="text-sm text-slate-400">Clean fundamental waveform</span>
               </motion.div>
             </motion.div>
           </div>
 
-          {/* Caption */}
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-            className="max-w-2xl text-center text-lg text-slate-300/90 sm:text-xl"
-          >
-            Voltage ripple introduces instability in precision systems
-          </motion.p>
+          {/* Caption content */}
+          <div className="flex flex-col items-center gap-4">
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+              transition={{ duration: 0.8, delay: 0.6 }}
+              className="text-center text-lg text-slate-300/90 sm:text-xl"
+            >
+              Distortion is not just noise.
+            </motion.p>
+
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+              transition={{ duration: 0.8, delay: 0.7 }}
+              className="text-center text-lg text-slate-300/90 sm:text-xl"
+            >
+              It changes how systems respond.
+            </motion.p>
+
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+              transition={{ duration: 0.8, delay: 0.8 }}
+              className="text-center text-lg text-slate-200 brightness-110 sm:text-xl"
+            >
+              Ripple → Control instability → Position error
+            </motion.p>
+
+            <motion.p
+              initial={{ opacity: 0, y: 15 }}
+              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 15 }}
+              transition={{ duration: 0.8, delay: 0.95 }}
+              className="mt-2 text-center text-sm text-slate-400/80"
+            >
+              THD ∝ harmonic energy in the signal
+            </motion.p>
+          </div>
         </div>
       </div>
     </section>

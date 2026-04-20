@@ -8,7 +8,8 @@ const cards = [
     label: 'Critical',
     indicator: '↓↓↓',
     isPrimary: true,
-    description: 'Total Harmonic Distortion',
+    description: 'Defines waveform purity',
+    subtext: 'Directly impacts system stability',
   },
   {
     id: 'efficiency',
@@ -16,7 +17,8 @@ const cards = [
     label: 'Secondary',
     indicator: '↓',
     isPrimary: false,
-    description: 'Power Conversion Efficiency',
+    description: 'Affects power loss',
+    subtext: 'Does not define precision',
   },
   {
     id: 'temperature',
@@ -24,7 +26,8 @@ const cards = [
     label: 'Constraint',
     indicator: '↑',
     isPrimary: false,
-    description: 'Thermal Management',
+    description: 'Operational constraint',
+    subtext: 'Maintained within safe limits',
   },
 ]
 
@@ -96,9 +99,14 @@ function PriorityCard({ card, index, isInView }) {
       </motion.span>
 
       {/* Description */}
-      <p className="relative z-10 text-center text-sm text-slate-400">
-        {card.description}
-      </p>
+      <div className="relative z-10 flex flex-col items-center gap-1">
+        <p className="text-center text-sm text-slate-400">
+          {card.description}
+        </p>
+        <p className="text-center text-xs text-slate-500">
+          {card.subtext}
+        </p>
+      </div>
 
       {/* Pulse animation for primary card */}
       {card.isPrimary && (
@@ -122,8 +130,12 @@ export default function DesignDecision() {
   return (
     <section
       ref={ref}
-      className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden py-20"
+      className="relative flex h-screen min-h-screen snap-start flex-col items-center justify-center overflow-hidden bg-gradient-to-b from-background via-background to-[#111827]"
+      data-section="decision"
     >
+      {/* Radial glow from top */}
+      <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(59,130,246,0.08),transparent)]" />
+      
       {/* Background glow */}
       <div className="pointer-events-none absolute left-1/2 top-1/3 h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-blue-500/8 blur-[150px]" />
 
@@ -134,14 +146,32 @@ export default function DesignDecision() {
             initial={{ opacity: 0, y: 30 }}
             animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
             transition={{ duration: 0.8, ease: 'easeOut' }}
-            className="text-center"
+            className="flex flex-col items-center gap-4 text-center"
           >
-            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.25em] text-blue-300/80">
+            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-blue-300/80">
               Design Priorities
             </p>
             <h2 className="font-heading text-3xl font-extrabold text-[#F9FAFB] sm:text-4xl lg:text-5xl">
               What Matters Most
             </h2>
+            <div className="flex flex-col gap-2 pt-2">
+              <motion.p
+                initial={{ opacity: 0, y: 15 }}
+                animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 15 }}
+                transition={{ duration: 0.8, ease: 'easeOut', delay: 0.1 }}
+                className="text-lg text-slate-300/90"
+              >
+                Not all parameters matter equally.
+              </motion.p>
+              <motion.p
+                initial={{ opacity: 0, y: 15 }}
+                animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 15 }}
+                transition={{ duration: 0.8, ease: 'easeOut', delay: 0.15 }}
+                className="text-lg text-slate-200 brightness-110"
+              >
+                In precision systems, signal quality comes first.
+              </motion.p>
+            </div>
           </motion.div>
 
           {/* Cards grid */}
@@ -151,14 +181,14 @@ export default function DesignDecision() {
             ))}
           </div>
 
-          {/* Caption */}
+          {/* Final closing line */}
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 0.8, delay: 0.8 }}
-            className="max-w-2xl text-center text-lg text-slate-300/90"
+            className="max-w-2xl text-center text-xl font-medium text-slate-200 brightness-110"
           >
-            In precision systems, signal quality is prioritized over efficiency.
+            Power quality defines system performance.
           </motion.p>
 
           {/* Transition text */}
@@ -166,7 +196,7 @@ export default function DesignDecision() {
             initial={{ opacity: 0, y: 20 }}
             animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 0.8, delay: 1 }}
-            className="mt-8 flex flex-col items-center gap-4 pt-8"
+            className="mt-4 flex flex-col items-center gap-4 pt-4"
           >
             <p className="font-heading text-base font-medium text-slate-400 sm:text-lg">
               Now, let's examine a conventional inverter design.

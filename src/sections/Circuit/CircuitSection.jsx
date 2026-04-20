@@ -2,7 +2,10 @@ import { motion } from 'framer-motion'
 
 export default function CircuitSection() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-[#111827] to-background py-24 md:py-32">
+    <section 
+      className="relative min-h-screen snap-start overflow-hidden bg-gradient-to-b from-[#111827] to-background py-24 md:py-32"
+      data-section="circuit"
+    >
       <div className="mx-auto max-w-7xl px-6 md:px-10">
         <motion.p
           initial={{ opacity: 0, y: 12 }}

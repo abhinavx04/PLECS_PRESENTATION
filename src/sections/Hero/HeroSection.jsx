@@ -4,7 +4,10 @@ import SignalPipeline from '@/components/visuals/SignalPipeline'
 
 export default function HeroSection() {
   return (
-    <section className="relative flex min-h-screen flex-col justify-center overflow-hidden bg-gradient-to-b from-background to-[#111827]">
+    <section 
+      className="relative flex h-screen min-h-screen snap-start flex-col justify-center overflow-hidden bg-gradient-to-b from-background to-[#111827]"
+      data-section="hero"
+    >
       <AuroraBackground />
       <div className="pointer-events-none absolute inset-0 z-[1] bg-black/10" />
       <div className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-b from-[#070b14]/30 via-[#0b0f19]/24 to-[#0b0f19]/42" />
