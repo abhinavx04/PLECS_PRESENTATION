@@ -4,6 +4,10 @@ import DesignObjectivesSection from './sections/DesignObjectives/DesignObjective
 import CircuitSection from './sections/Circuit/CircuitSection'
 import SpecificationsSection from './sections/Specifications/SpecificationsSection'
 import DerivationSection from './sections/Derivation/DerivationSection'
+import ProposedCircuitSection from './sections/ProposedCircuit/ProposedCircuitSection'
+import ProposedResultsSection from './sections/ProposedResults/ProposedResultsSection'
+import ComparisonSection from './sections/Comparison/ComparisonSection'
+import ConclusionSection from './sections/Conclusion/ConclusionSection'
 
 function App() {
   const containerRef = useRef(null)
@@ -58,6 +62,10 @@ function App() {
       <CircuitSection />
       <SpecificationsSection />
       <DerivationSection />
+      <ProposedCircuitSection />
+      <ProposedResultsSection />
+      <ComparisonSection />
+      <ConclusionSection />
     </div>
   )
 }

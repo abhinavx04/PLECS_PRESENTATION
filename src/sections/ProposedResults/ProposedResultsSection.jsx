@@ -4,15 +4,16 @@ import ImageModal from '@/components/ui/ImageModal'
 const THERMAL_STATS = [
   {
     label: 'IGBT T_j (max)',
-    value: '93.12',
+    value: '99.99',
     unit: '°C',
-    color: 'text-green-400',
-    bgColor: 'bg-green-500/10',
-    borderColor: 'border-green-500/30',
+    color: 'text-amber-400',
+    bgColor: 'bg-amber-500/10',
+    borderColor: 'border-amber-500/30',
+    note: '< 100°C limit',
   },
   {
     label: 'Diode T_j (max)',
-    value: '63.91',
+    value: '68.13',
     unit: '°C',
     color: 'text-cyan-400',
     bgColor: 'bg-cyan-500/10',
@@ -20,34 +21,7 @@ const THERMAL_STATS = [
   },
   {
     label: 'Total Switch Loss',
-    value: '48.701',
-    unit: 'W',
-    color: 'text-yellow-400',
-    bgColor: 'bg-yellow-500/10',
-    borderColor: 'border-yellow-500/30',
-  },
-]
-
-const OUTPUT_STATS = [
-  {
-    label: 'V_out',
-    value: '109.7',
-    unit: 'V',
-    color: 'text-blue-400',
-    bgColor: 'bg-blue-500/10',
-    borderColor: 'border-blue-500/30',
-  },
-  {
-    label: 'THD',
-    value: '0.4576',
-    unit: '%',
-    color: 'text-purple-400',
-    bgColor: 'bg-purple-500/10',
-    borderColor: 'border-purple-500/30',
-  },
-  {
-    label: 'P_out',
-    value: '3010.5',
+    value: '54.406',
     unit: 'W',
     color: 'text-orange-400',
     bgColor: 'bg-orange-500/10',
@@ -55,11 +29,38 @@ const OUTPUT_STATS = [
   },
 ]
 
-export default function SpecificationsSection() {
+const OUTPUT_STATS = [
+  {
+    label: 'V_out (rms)',
+    value: '110.029',
+    unit: 'V',
+    color: 'text-blue-400',
+    bgColor: 'bg-blue-500/10',
+    borderColor: 'border-blue-500/30',
+  },
+  {
+    label: 'THD',
+    value: '4.24e-5',
+    unit: '%',
+    color: 'text-purple-400',
+    bgColor: 'bg-purple-500/10',
+    borderColor: 'border-purple-500/30',
+  },
+  {
+    label: 'P_out',
+    value: '3026.6',
+    unit: 'W',
+    color: 'text-green-400',
+    bgColor: 'bg-green-500/10',
+    borderColor: 'border-green-500/30',
+  },
+]
+
+export default function ProposedResultsSection() {
   return (
     <section
-      className="relative min-h-screen snap-start overflow-hidden bg-gradient-to-b from-background via-background to-[#111827] py-12 md:py-16"
-      data-section="simulation"
+      className="relative min-h-screen snap-start overflow-hidden bg-gradient-to-b from-[#111827] via-background to-background py-12 md:py-16"
+      data-section="proposed-results"
     >
       {/* Radial glow */}
       <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(59,130,246,0.08),transparent)]" />
@@ -74,7 +75,7 @@ export default function SpecificationsSection() {
             transition={{ duration: 0.7, ease: 'easeOut' }}
             className="mb-2 text-xs font-semibold uppercase tracking-[0.22em] text-blue-300/70"
           >
-            Simulation Results — Conventional Design
+            Section 05 — Proposed Design Results
           </motion.p>
 
           <motion.h2
@@ -88,7 +89,7 @@ export default function SpecificationsSection() {
           </motion.h2>
         </div>
 
-        {/* Two graphs side by side with stats */}
+        {/* Two graphs side by side */}
         <div className="grid gap-8 lg:grid-cols-2">
           {/* Left: Thermal analysis */}
           <motion.div
@@ -98,16 +99,15 @@ export default function SpecificationsSection() {
             transition={{ duration: 0.8, delay: 0.1, ease: 'easeOut' }}
             className="flex flex-col"
           >
-            {/* Image container */}
-            <div className="relative overflow-hidden rounded-xl border border-slate-700/50 bg-slate-900/30">
+            <div className="relative overflow-hidden rounded-xl border border-slate-700/50 bg-white/95 shadow-2xl shadow-blue-500/5">
               <ImageModal
-                src="/thermal-analysis.png"
-                alt="Thermal analysis showing IGBT and diode temperatures and losses"
+                src="/proposed-thermal.png"
+                alt="Proposed design thermal analysis - IGBT and diode junction temperatures and losses"
                 className="w-full"
               />
             </div>
             <p className="mt-2 text-center text-xs font-medium tracking-wide text-slate-500">
-              Fig.&thinsp;2 &mdash; IGBT &amp; Diode junction temps and losses (click to zoom)
+              Fig.&thinsp;5 &mdash; IGBT &amp; Diode junction temps and losses (click to zoom)
             </p>
 
             {/* Key figures - Thermal */}
@@ -136,6 +136,9 @@ export default function SpecificationsSection() {
                       {stat.value}
                       <span className="ml-1 text-sm font-normal text-slate-400">{stat.unit}</span>
                     </p>
+                    {stat.note && (
+                      <p className="mt-0.5 text-[9px] text-green-400">{stat.note}</p>
+                    )}
                   </div>
                 </motion.div>
               ))}
@@ -150,16 +153,15 @@ export default function SpecificationsSection() {
             transition={{ duration: 0.8, delay: 0.2, ease: 'easeOut' }}
             className="flex flex-col"
           >
-            {/* Image container */}
-            <div className="relative overflow-hidden rounded-xl border border-slate-700/50 bg-slate-900/30">
+            <div className="relative overflow-hidden rounded-xl border border-slate-700/50 bg-white/95 shadow-2xl shadow-blue-500/5">
               <ImageModal
-                src="/output-waveforms.png"
-                alt="Output voltage, current, and power waveforms"
+                src="/proposed-waveforms.png"
+                alt="Proposed design output waveforms - voltage, current, and power"
                 className="w-full"
               />
             </div>
             <p className="mt-2 text-center text-xs font-medium tracking-wide text-slate-500">
-              Fig.&thinsp;3 &mdash; Output voltage, current &amp; power (click to zoom)
+              Fig.&thinsp;6 &mdash; Output voltage, current &amp; power (click to zoom)
             </p>
 
             {/* Key figures - Output */}
@@ -195,31 +197,47 @@ export default function SpecificationsSection() {
           </motion.div>
         </div>
 
-        {/* Summary callout */}
+        {/* THD Highlight - The star metric */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: 20, scale: 0.95 }}
+          whileInView={{ opacity: 1, y: 0, scale: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.7, delay: 0.5, ease: 'easeOut' }}
           className="mt-8 flex justify-center"
         >
-          <div className="flex items-center gap-4 rounded-xl border border-slate-700/50 bg-slate-800/50 px-6 py-4">
+          <div className="relative overflow-hidden rounded-2xl border-2 border-green-500/40 bg-gradient-to-r from-green-500/10 via-green-500/5 to-green-500/10 px-8 py-5">
+            {/* Animated background pulse */}
             <motion.div
-              animate={{ scale: [1, 1.2, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-green-500/20"
-            >
-              <svg className="h-5 w-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            </motion.div>
-            <div>
-              <p className="text-sm font-semibold text-slate-200">
-                Key conventional metrics (from comparison table)
-              </p>
-              <p className="text-xs text-slate-400">
-                Efficiency: <span className="font-semibold text-green-400">98.408%</span> • THD: <span className="font-semibold text-yellow-400">0.4576%</span> • P_out: <span className="font-semibold text-orange-400">3010.5 W</span>
-              </p>
+              animate={{ opacity: [0.2, 0.4, 0.2], scale: [1, 1.05, 1] }}
+              transition={{ duration: 3, repeat: Infinity }}
+              className="absolute inset-0 bg-gradient-to-r from-green-500/10 via-transparent to-green-500/10 blur-2xl"
+            />
+            
+            <div className="relative flex items-center gap-6">
+              {/* Icon */}
+              <motion.div
+                animate={{ rotate: [0, 360] }}
+                transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+                className="flex h-16 w-16 items-center justify-center rounded-full bg-green-500/20 ring-2 ring-green-400/30"
+              >
+                <svg className="h-8 w-8 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </motion.div>
+              
+              {/* Text */}
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-green-300">
+                  Key Achievement
+                </p>
+                <p className="mt-1 text-3xl font-black text-green-400">
+                  THD: 4.24×10<sup>-5</sup>%
+                </p>
+                <p className="mt-1 text-sm text-slate-400">
+                  Efficiency: <span className="font-bold text-blue-400">98.23%</span> • 
+                  f<sub>sw</sub>: <span className="font-bold text-cyan-400">8649 Hz</span>
+                </p>
+              </div>
             </div>
           </div>
         </motion.div>
