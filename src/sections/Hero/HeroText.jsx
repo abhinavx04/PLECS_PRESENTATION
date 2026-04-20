@@ -30,7 +30,7 @@ export default function HeroText() {
         variants={fade}
         className="font-heading text-4xl font-extrabold leading-[1.05] text-[#F9FAFB] sm:text-5xl lg:text-6xl xl:text-7xl"
       >
-        Designing a Low-THD Inverter Using LCL&nbsp;Filters
+        Inverter Design for EUV Lithography Wafer&nbsp;Stages
       </motion.h1>
 
       <motion.p

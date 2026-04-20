@@ -6,6 +6,7 @@ import {
   useMotionValueEvent,
   AnimatePresence,
 } from 'framer-motion'
+import { cn } from '@/lib/utils'
 
 /* ── tiny math helpers ── */
 const S = (t) => <sub className="text-[0.65em]">{t}</sub>
@@ -22,20 +23,45 @@ function Frac({ top, bottom }) {
   )
 }
 
-/* key variables that glow when their step is active */
-const Glow = ({ children, active, color = 'blue' }) => (
-  <span
-    className={`relative inline-block transition-all duration-700 ${
-      active
-        ? color === 'amber'
-          ? 'text-amber-200 drop-shadow-[0_0_6px_rgba(251,191,36,0.5)]'
-          : 'text-blue-200 drop-shadow-[0_0_6px_rgba(96,165,250,0.5)]'
-        : ''
-    }`}
-  >
-    {children}
-  </span>
-)
+/* key variables (f_sw, L1, L2, C, …): soft glow + faint underline when step is active */
+function Glow({ children, active, color = 'blue' }) {
+  const amber = color === 'amber'
+  return (
+    <motion.span
+      className={cn(
+        'relative inline-block rounded-sm px-[0.04em] transition-colors duration-700',
+        active &&
+          (amber
+            ? 'text-amber-100/90 underline decoration-amber-400/30 underline-offset-[4px]'
+            : 'text-sky-100/90 underline decoration-sky-400/25 underline-offset-[4px]'),
+      )}
+      animate={
+        active
+          ? {
+              textShadow: amber
+                ? [
+                    '0 0 8px rgba(251,191,36,0.12)',
+                    '0 0 16px rgba(251,191,36,0.28)',
+                    '0 0 8px rgba(251,191,36,0.12)',
+                  ]
+                : [
+                    '0 0 8px rgba(125,211,252,0.1)',
+                    '0 0 14px rgba(125,211,252,0.22)',
+                    '0 0 8px rgba(125,211,252,0.1)',
+                  ],
+            }
+          : { textShadow: '0 0 0 transparent' }
+      }
+      transition={
+        active
+          ? { duration: 3.2, repeat: Infinity, ease: 'easeInOut' }
+          : { duration: 0.35 }
+      }
+    >
+      {children}
+    </motion.span>
+  )
+}
 
 /* ── step data ── */
 const STEPS = [
@@ -78,7 +104,12 @@ const STEPS = [
       <span className="inline-flex items-center flex-wrap gap-x-1">
         Δ{I('i')}{S(<>L{S('2')}</>)} <span>≈</span>
         <Frac
-          top={<>Δ{I('i')}{S(<>L{S('1')}</>)}</>}
+          top={
+            <>
+              Δ{I('i')}
+              <Glow active={active}>{S(<>L{S('1')}</>)}</Glow>
+            </>
+          }
           bottom={
             <>
               {I('ω')}{P('2')} · <Glow active={active}>{I('L')}{S('2')}</Glow> ·{' '}
@@ -118,13 +149,31 @@ const STEPS = [
   {
     id: 5,
     equation: (active) => (
-      <span className="inline-flex items-center flex-wrap gap-x-2">
+      <span className="inline-flex items-center flex-wrap gap-x-2 gap-y-1">
         <span>Minimize THD</span>
         <span>⇒</span>
         <span>Maximize</span>
-        <Glow active={active} color="amber">
-          {I('f')}{S('sw')}{P('3')} · {I('L')}{S('1')} · {I('L')}{S('2')} · {I('C')}
-        </Glow>
+        <span className="inline-flex flex-wrap items-center gap-x-1.5">
+          <Glow active={active} color="amber">
+            {I('f')}
+            {S('sw')}
+            {P('3')}
+          </Glow>
+          <span>·</span>
+          <Glow active={active} color="amber">
+            {I('L')}
+            {S('1')}
+          </Glow>
+          <span>·</span>
+          <Glow active={active} color="amber">
+            {I('L')}
+            {S('2')}
+          </Glow>
+          <span>·</span>
+          <Glow active={active} color="amber">
+            {I('C')}
+          </Glow>
+        </span>
       </span>
     ),
     explanation: 'Design objective',
